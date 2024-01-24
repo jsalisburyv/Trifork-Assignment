@@ -9,6 +9,14 @@ class YoloAnnotation:
     y_center: float
     width: float
     height: float
+    
+    @staticmethod
+    def write_to_file(annotations: List['YoloAnnotation'], output_path: str):
+        with open(output_path, 'w') as file:
+            for annotation in annotations:
+                line = f"{annotation.class_id} {annotation.x_center} {annotation.y_center} {annotation.width} {annotation.height}\n"
+                file.write(line)
+        
 
 def coco_to_yolo(coco_images: List[CocoImage], coco_annotations: List[CocoAnnotation], coco_categories: List[CocoCategory]) -> List[YoloAnnotation]:
     """

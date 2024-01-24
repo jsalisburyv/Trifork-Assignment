@@ -1,12 +1,25 @@
 import argparse
 import data_loader
 import annotation_converter
+import preprocessing
+from PIL import Image
 
+NEW_IMAGE_SIZE = (1024, 768)
 
 def main(args):
-    coco_images, coco_annotations, coco_categories = data_loader.load_coco_annotations(args.coco_file)
-    yolo_annotations = annotation_converter.coco_to_yolo(coco_images, coco_annotations, coco_categories)
-    images = list(data_loader.load_images_from_path(args.images_path))
+    #coco_images, coco_annotations, coco_categories = data_loader.load_coco_annotations(args.coco_file)
+    #yolo_annotations = annotation_converter.coco_to_yolo(coco_images, coco_annotations, coco_categories)
+    coco_data = data_loader.load_coco_annotations(args.coco_file)
+    yolo_annotations = annotation_converter.coco_to_yolo(*coco_data)
+    
+    sorted_yolo_annotations = dict(sorted(yolo_annotations.items()))
+    
+    images = dict(data_loader.load_images_from_path(args.images_path))
+    resized_images = {}
+    for _id, image in images.items():
+        resized_images[_id] = image.resize(NEW_IMAGE_SIZE, Image.NEAREST)
+    splitted_dataset = preprocessing.split_dataset(resized_images, sorted_yolo_annotations)
+    preprocessing.save_dataset(*splitted_dataset, args.output_path)
     
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Dataset Preprocessing')

@@ -1,5 +1,6 @@
 import json
 import os
+from pathlib import Path
 from typing import List, Iterable
 from dataclasses import dataclass
 from PIL import Image
@@ -39,5 +40,6 @@ def load_coco_annotations(coco_annotations_path: str):
 def load_images_from_path(images_path: str) -> Iterable:
     for filename in os.listdir(images_path):
         if filename.endswith('.jpg'):
-            yield Image.open(os.path.join(images_path, filename))
+            path = Path(images_path, filename)
+            yield path.stem, Image.open(path)
 
