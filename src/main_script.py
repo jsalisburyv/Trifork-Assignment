@@ -29,6 +29,7 @@ def main(args) -> None:
 
 
 if __name__ == "__main__":
+    # Parse command-line arguments
     parser = argparse.ArgumentParser(description="Dataset Preprocessing")
     parser.add_argument(
         "-c",
@@ -55,5 +56,6 @@ if __name__ == "__main__":
         "-n", "--new_size", default=(1024, 768), help="New Image size.", type=tuple
     )
 
+    # Execute the main function
     args = parser.parse_args()
     main(args)

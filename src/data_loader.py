@@ -8,6 +8,16 @@ from PIL import Image
 
 @dataclass
 class CocoImage:
+    """
+    Represents an image in COCO format.
+
+    Attributes:
+    - id (int): Image identifier.
+    - file_name (str): Name of the image file.
+    - height (int): Height of the image.
+    - width (int): Width of the image.
+    """
+
     id: int
     file_name: str
     height: int
@@ -16,6 +26,18 @@ class CocoImage:
 
 @dataclass
 class CocoAnnotation:
+    """
+    Represents an annotation in COCO format.
+
+    Attributes:
+    - id (int): Annotation identifier.
+    - image_id (int): Identifier of the associated image.
+    - category_id (int): Identifier of the category.
+    - bbox (List[int]): Bounding box coordinates.
+    - area (float): Area of the annotation.
+    - iscrowd (int): Indicator for crowd annotations.
+    """
+
     id: int
     image_id: int
     category_id: int
@@ -26,6 +48,15 @@ class CocoAnnotation:
 
 @dataclass
 class CocoCategory:
+    """
+    Represents a category in COCO format.
+
+    Attributes:
+    - id (int): Category identifier.
+    - name (str): Category name.
+    - supercategory (str): Supercategory name.
+    """
+
     id: int
     name: str
     supercategory: str
@@ -34,6 +65,21 @@ class CocoCategory:
 def load_coco_annotations(
     coco_annotations_path: str,
 ) -> Tuple[List[CocoImage], List[CocoAnnotation], List[CocoCategory]]:
+    """
+    Load COCO annotations from a JSON file.
+
+    Parameters:
+    - coco_annotations_path (str): Path to the COCO annotations JSON file.
+
+    Returns:
+    - Tuple[List[CocoImage], List[CocoAnnotation], List[CocoCategory]]:
+      A tuple containing lists of CocoImage, CocoAnnotation, and CocoCategory instances.
+
+    Raises:
+    - FileNotFoundError: If the specified file path is not found.
+    - ValueError: If there is an issue with the JSON format in the file.
+    """
+
     try:
         with open(coco_annotations_path, "r") as file:
             coco_data = json.load(file)
@@ -58,18 +104,20 @@ def load_coco_annotations(
     return coco_images, coco_annotations, coco_categories
 
 
-# def load_images_from_path(images_path: str) -> Iterable[Tuple[str, Image.Image]]:
-#     try:
-#         for filename in os.listdir(images_path):
-#             if filename.endswith(".jpg"):
-#                 path = Path(images_path, filename)
-#                 with Image.open(path) as image:
-#                     yield path.stem, image
-#     except FileNotFoundError:
-#         raise FileNotFoundError(f"Directory not found: {images_path}")
-#     except Exception as e:
-#         raise RuntimeError(f"Error loading images from path: {e}")
 def load_images_from_path(images_path: str) -> Iterable[Tuple[str, Image.Image]]:
+    """
+    Load images from a directory.
+
+    Parameters:
+    - images_path (str): Path to the folder containing images.
+
+    Returns:
+    - Iterable[Tuple[str, Image.Image]]: Iterator yielding tuples of image ID and corresponding Image instance.
+
+    Raises:
+    - FileNotFoundError: If the specified directory path is not found.
+    - RuntimeError: If there is an error while loading images.
+    """
     try:
         for filename in os.listdir(images_path):
             if filename.endswith(".jpg"):

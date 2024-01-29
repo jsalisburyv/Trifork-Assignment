@@ -18,6 +18,20 @@ def split_dataset(
     List[Tuple[int, List[YoloAnnotation]]],
     List[Tuple[int, List[YoloAnnotation]]],
 ]:
+    """
+    Split a dataset into training, testing, and validation sets.
+
+    Parameters:
+    - images (Dict[int, List[str]]): Dictionary of image IDs mapped to their paths.
+    - annotations (Dict[int, List[YoloAnnotation]]): Dictionary of image IDs mapped to YOLO annotations.
+    - test_size (float): The proportion of the dataset to include in the test split. Default is 0.2.
+    - val_size (float): The proportion of the dataset to include in the validation split. Default is 0.1.
+    - random_state (int): Seed for the random number generator. Default is 33.
+
+    Returns:
+    - Tuple containing lists of training, testing, and validation images and annotations.
+    """
+
     try:
         images_list = [(k, v) for k, v in images.items()]
         annotations_list = [(k, v) for k, v in annotations.items()]
@@ -64,6 +78,18 @@ def save_dataset(
     val_annotations: List[Tuple[int, List[YoloAnnotation]]],
     output_path: str,
 ) -> None:
+    """
+    Save the training, testing, and validation datasets.
+
+    Parameters:
+    - train_images (List[Tuple[int, List[str]]]): List of training images with IDs and paths.
+    - test_images (List[Tuple[int, List[str]]]): List of testing images with IDs and paths.
+    - val_images (List[Tuple[int, List[str]]]): List of validation images with IDs and paths.
+    - train_annotations (List[Tuple[int, List[YoloAnnotation]]]): List of training annotations with image IDs.
+    - test_annotations (List[Tuple[int, List[YoloAnnotation]]]): List of testing annotations with image IDs.
+    - val_annotations (List[Tuple[int, List[YoloAnnotation]]]): List of validation annotations with image IDs.
+    - output_path (str): Path to the output folder.
+    """
     try:
         os.makedirs(output_path, exist_ok=True)
         # dir_names = ["train", "test", "validation"]
@@ -86,6 +112,14 @@ def __create_folder_and_save_data(
     images: List[Tuple[int, List[str]]],
     annotations: List[Tuple[int, List[YoloAnnotation]]],
 ) -> None:
+    """
+    Create a folder and save data (images and annotations) in it.
+
+    Parameters:
+    - folder_path (str): Path to the folder.
+    - images (List[Tuple[int, List[str]]]): List of images with IDs and paths.
+    - annotations (List[Tuple[int, List[YoloAnnotation]]]): List of annotations with image IDs.
+    """
     try:
         os.makedirs(folder_path, exist_ok=True)
         for id, image in images:
