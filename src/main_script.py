@@ -3,6 +3,7 @@ import data_loader
 import annotation_converter
 import preprocessing
 from PIL import Image
+import os
 
 
 def main(args) -> None:
@@ -26,21 +27,21 @@ if __name__ == "__main__":
     parser.add_argument(
         "-c",
         "--coco_file",
-        default="data/coco.json",
+        required=True,
         help="Path to the COCO annotations JSON file.",
         type=str,
     )
     parser.add_argument(
         "-i",
         "--images_path",
-        default="data/images",
+        required=True,
         help="Path to the folder containing images.",
         type=str,
     )
     parser.add_argument(
         "-o",
         "--output_path",
-        default="output",
+        required=True,
         help="Path to the output folder.",
         type=str,
     )

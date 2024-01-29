@@ -34,8 +34,14 @@ class CocoCategory:
 def load_coco_annotations(
     coco_annotations_path: str,
 ) -> Tuple[List[CocoImage], List[CocoAnnotation], List[CocoCategory]]:
-    with open(coco_annotations_path, "r") as file:
-        coco_data = json.load(file)
+    try:
+        with open(coco_annotations_path, "r") as file:
+            coco_data = json.load(file)
+    except FileNotFoundError:
+        raise FileNotFoundError(f"File not found: {coco_annotations_path}")
+    except json.JSONDecodeError:
+        raise ValueError(
+            f"Invalid JSON format in file: {coco_annotations_path}")
 
     coco_images = [
         CocoImage(**image_data) for image_data in coco_data.get("images", [])
@@ -52,8 +58,24 @@ def load_coco_annotations(
     return coco_images, coco_annotations, coco_categories
 
 
+# def load_images_from_path(images_path: str) -> Iterable[Tuple[str, Image.Image]]:
+#     try:
+#         for filename in os.listdir(images_path):
+#             if filename.endswith(".jpg"):
+#                 path = Path(images_path, filename)
+#                 with Image.open(path) as image:
+#                     yield path.stem, image
+#     except FileNotFoundError:
+#         raise FileNotFoundError(f"Directory not found: {images_path}")
+#     except Exception as e:
+#         raise RuntimeError(f"Error loading images from path: {e}")
 def load_images_from_path(images_path: str) -> Iterable[Tuple[str, Image.Image]]:
-    for filename in os.listdir(images_path):
-        if filename.endswith(".jpg"):
-            path = Path(images_path, filename)
-            yield path.stem, Image.open(path)
+    try:
+        for filename in os.listdir(images_path):
+            if filename.endswith(".jpg"):
+                path = Path(images_path, filename)
+                yield path.stem, Image.open(path)
+    except FileNotFoundError:
+        raise FileNotFoundError(f"Directory not found: {images_path}")
+    except Exception as e:
+        raise RuntimeError(f"Error loading images from path: {e}")

@@ -16,10 +16,15 @@ class YoloAnnotation:
 
     @staticmethod
     def write_to_file(annotations: List["YoloAnnotation"], output_path: str) -> None:
-        with open(output_path, "w") as file:
-            for annotation in annotations:
-                line = annotation.to_string() + "\n"
-                file.write(line)
+        try:
+            with open(output_path, "w") as file:
+                for annotation in annotations:
+                    line = annotation.to_string() + "\n"
+                    file.write(line)
+        except FileNotFoundError:
+            raise FileNotFoundError(f"Output path not found: {output_path}")
+        except Exception as e:
+            raise RuntimeError(f"Error writing YOLO annotations to file: {e}")
 
 
 def coco_to_yolo(
@@ -27,37 +32,35 @@ def coco_to_yolo(
     coco_annotations: List[CocoAnnotation],
     coco_categories: List[CocoCategory],
 ) -> Dict[int, List[YoloAnnotation]]:
-    """
-    Convert COCO annotations to YOLO format.
+    try:
+        yolo_annotations = {}
+        class_mapping = {category.id: category.id -
+                         1 for category in coco_categories}
 
-    Parameters:
-    - coco_annotations (List[CocoAnnotation]): List of CocoAnnotation instances.
-    - coco_images (List[CocoImage]): List of CocoImage instances.
+        for img in coco_images:
+            yolo_annotations[img.id] = []
+            for annotation in coco_annotations:
+                if annotation.image_id == img.id:
+                    # Convert COCO bounding box coordinates to YOLO format
+                    x_center = (
+                        annotation.bbox[0] + annotation.bbox[2]) / (2 * img.width)
+                    y_center = (
+                        annotation.bbox[1] + annotation.bbox[3]) / (2 * img.height)
+                    width = (annotation.bbox[2] -
+                             annotation.bbox[0]) / img.width
+                    height = (annotation.bbox[3] -
+                              annotation.bbox[1]) / img.height
 
-    Returns:
-    - List[YoloAnnotation]: List of YoloAnnotation instances.
-    """
-    yolo_annotations = {}
-    # Used
-    class_mapping = {category.id: category.id - 1 for category in coco_categories}
+                    # Map COCO category_id to YOLO class_id
+                    class_id = class_mapping.get(annotation.category_id, -1)
 
-    for img in coco_images:
-        yolo_annotations[img.id] = []
-        for annotation in coco_annotations:
-            if annotation.image_id == img.id:
-                # Convert COCO bounding box coordinates to YOLO format
-                x_center = (annotation.bbox[0] + annotation.bbox[2]) / (2 * img.width)
-                y_center = (annotation.bbox[1] + annotation.bbox[3]) / (2 * img.height)
-                width = (annotation.bbox[2] - annotation.bbox[0]) / img.width
-                height = (annotation.bbox[3] - annotation.bbox[1]) / img.height
+                    # Create YoloAnnotation instance
+                    yolo_annotation = YoloAnnotation(
+                        class_id, x_center, y_center, width, height
+                    )
+                    yolo_annotations[img.id].append(yolo_annotation)
 
-                # Map COCO category_id to YOLO class_id
-                class_id = class_mapping.get(annotation.category_id, -1)
-
-                # Create YoloAnnotation instance
-                yolo_annotation = YoloAnnotation(
-                    class_id, x_center, y_center, width, height
-                )
-                yolo_annotations[img.id].append(yolo_annotation)
-
-    return yolo_annotations
+        return yolo_annotations
+    except Exception as e:
+        raise RuntimeError(
+            f"Error converting COCO annotations to YOLO format: {e}")
