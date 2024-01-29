@@ -3,23 +3,29 @@ import data_loader
 import annotation_converter
 import preprocessing
 from PIL import Image
-import os
+from tqdm import tqdm
 
 
 def main(args) -> None:
+    print("Loading COCO annotations...")
     coco_data = data_loader.load_coco_annotations(args.coco_file)
-    yolo_annotations = annotation_converter.coco_to_yolo(*coco_data)
 
+    print("Converting to YOLO annotations...")
+    yolo_annotations = annotation_converter.coco_to_yolo(*coco_data)
     sorted_yolo_annotations = dict(sorted(yolo_annotations.items()))
 
+    print("Loading and resizing images...")
     images = dict(data_loader.load_images_from_path(args.images_path))
     resized_images = {}
-    for _id, image in images.items():
+    for _id, image in tqdm(images.items(), desc="Resizing images", unit="image"):
         resized_images[_id] = image.resize(args.new_size, Image.NEAREST)
+
+    print("Splitting and saving dataset...")
     splitted_dataset = preprocessing.split_dataset(
         resized_images, sorted_yolo_annotations
     )
     preprocessing.save_dataset(*splitted_dataset, args.output_path)
+    print("Dataset preprocessing complete.")
 
 
 if __name__ == "__main__":
