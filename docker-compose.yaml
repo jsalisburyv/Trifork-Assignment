@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  preprocessing:
+    container_name: assignment
+    image: assignment:latest
+    build:
+      dockerfile: Dockerfile
+      tags:
+        - "assignment:latest"
+
+    volumes:
+      - .:/app
+
+    deploy:
+      resources:
+        reservations:
+          devices:
+          - driver: nvidia
+            device_ids: ['0']
+            capabilities: [gpu]
