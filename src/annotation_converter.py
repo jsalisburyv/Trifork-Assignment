@@ -1,6 +1,7 @@
-from typing import List
+from typing import List, Dict
 from dataclasses import dataclass
 from data_loader import CocoAnnotation, CocoImage, CocoCategory
+
 
 @dataclass
 class YoloAnnotation:
@@ -9,16 +10,23 @@ class YoloAnnotation:
     y_center: float
     width: float
     height: float
-    
-    @staticmethod
-    def write_to_file(annotations: List['YoloAnnotation'], output_path: str):
-        with open(output_path, 'w') as file:
-            for annotation in annotations:
-                line = f"{annotation.class_id} {annotation.x_center} {annotation.y_center} {annotation.width} {annotation.height}\n"
-                file.write(line)
-        
 
-def coco_to_yolo(coco_images: List[CocoImage], coco_annotations: List[CocoAnnotation], coco_categories: List[CocoCategory]) -> List[YoloAnnotation]:
+    def to_string(self) -> str:
+        return f"{self.class_id} {self.x_center} {self.y_center} {self.width} {self.height}"
+
+    @staticmethod
+    def write_to_file(annotations: List["YoloAnnotation"], output_path: str) -> None:
+        with open(output_path, "w") as file:
+            for annotation in annotations:
+                line = annotation.to_string() + "\n"
+                file.write(line)
+
+
+def coco_to_yolo(
+    coco_images: List[CocoImage],
+    coco_annotations: List[CocoAnnotation],
+    coco_categories: List[CocoCategory],
+) -> Dict[int, List[YoloAnnotation]]:
     """
     Convert COCO annotations to YOLO format.
 
@@ -32,7 +40,7 @@ def coco_to_yolo(coco_images: List[CocoImage], coco_annotations: List[CocoAnnota
     yolo_annotations = {}
     # Used
     class_mapping = {category.id: category.id - 1 for category in coco_categories}
-    
+
     for img in coco_images:
         yolo_annotations[img.id] = []
         for annotation in coco_annotations:
@@ -47,7 +55,9 @@ def coco_to_yolo(coco_images: List[CocoImage], coco_annotations: List[CocoAnnota
                 class_id = class_mapping.get(annotation.category_id, -1)
 
                 # Create YoloAnnotation instance
-                yolo_annotation = YoloAnnotation(class_id, x_center, y_center, width, height)
+                yolo_annotation = YoloAnnotation(
+                    class_id, x_center, y_center, width, height
+                )
                 yolo_annotations[img.id].append(yolo_annotation)
 
     return yolo_annotations
