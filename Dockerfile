@@ -6,4 +6,4 @@ COPY . /app
 
 RUN pip install -r requirements.txt
 
-CMD ["python", "src/main_script.py"]
+ENTRYPOINT ["python", "src/main_script.py", "-c", "data/coco.json", "-i", "data/images", "-o", "output"]
