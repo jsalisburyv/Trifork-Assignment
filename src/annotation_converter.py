@@ -86,20 +86,19 @@ def coco_to_yolo(
             for annotation in coco_annotations:
                 if annotation.image_id == img.id:
                     # Convert COCO bounding box coordinates to YOLO format
-                    x_center = (
-                        annotation.bbox[0] + annotation.bbox[2]) / (2 * img.width)
-                    y_center = (
-                        annotation.bbox[1] + annotation.bbox[3]) / (2 * img.height)
-                    width = (annotation.bbox[2] -
-                             annotation.bbox[0]) / img.width
-                    height = (annotation.bbox[3] -
-                              annotation.bbox[1]) / img.height
+                    x_center = annotation.bbox[0] + (annotation.bbox[2] / 2)
+                    y_center = annotation.bbox[1] + (annotation.bbox[3] / 2)
+
+                    norm_x_center = x_center / img.width
+                    norm_y_center = y_center / img.height
+                    norm_width = annotation.bbox[2] / img.width
+                    norm_height = annotation.bbox[3] / img.height
 
                     # Map COCO category_id to YOLO class_id
                     class_id = class_mapping.get(annotation.category_id, -1)
 
                     yolo_annotation = YoloAnnotation(
-                        class_id, x_center, y_center, width, height
+                        class_id, norm_x_center, norm_y_center, norm_width, norm_height
                     )
                     yolo_annotations[img.id].append(yolo_annotation)
 
