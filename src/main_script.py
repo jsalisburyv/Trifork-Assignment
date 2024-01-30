@@ -20,11 +20,12 @@ def main(args) -> None:
     for _id, image in tqdm(images.items(), desc="Resizing images", unit="image"):
         resized_images[_id] = image.resize(args.new_size, Image.NEAREST)
 
-    print("Splitting and saving dataset...")
+    print("Splitting and saving dataset and YAML file...")
     splitted_dataset = preprocessing.split_dataset(
         resized_images, sorted_yolo_annotations
     )
-    preprocessing.save_dataset(*splitted_dataset, args.output_path)
+    preprocessing.save_dataset(
+        *splitted_dataset, args.output_path, coco_data[2])
     print("Dataset preprocessing complete.")
 
 

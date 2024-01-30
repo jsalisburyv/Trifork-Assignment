@@ -1,7 +1,9 @@
 import os
+import yaml
 from sklearn.model_selection import train_test_split
 from annotation_converter import YoloAnnotation
 from typing import List, Dict, Tuple
+from data_loader import CocoCategory
 
 
 def split_dataset(
@@ -77,9 +79,10 @@ def save_dataset(
     val_annotations: List[Tuple[int, List[YoloAnnotation]]],
     test_annotations: List[Tuple[int, List[YoloAnnotation]]],
     output_path: str,
+    coco_categories: List[CocoCategory]
 ) -> None:
     """
-    Save the training, testing, and validation datasets.
+    Save the training, validation, and testing datasets, and create YOLO YAML configuration file.
 
     Parameters:
     - train_images (List[Tuple[int, List[str]]]): List of training images with IDs and paths.
@@ -89,20 +92,28 @@ def save_dataset(
     - val_annotations (List[Tuple[int, List[YoloAnnotation]]]): List of validation annotations with image IDs.
     - test_annotations (List[Tuple[int, List[YoloAnnotation]]]): List of testing annotations with image IDs.
     - output_path (str): Path to the output folder.
+    - coco_categories (List[CocoCategory]): List of CocoCategory instances representing class information.
+
+    Raises:
+    - RuntimeError: If there is an error during the dataset saving process or YAML file writing process.
     """
     try:
         os.makedirs(output_path, exist_ok=True)
-        # dir_names = ["train", "test", "validation"]
+        dir_names = ["train", "validation", "test"]
         __create_folder_and_save_data(
-            os.path.join(output_path, "train"), train_images, train_annotations
+            os.path.join(
+                output_path, dir_names[0]), train_images, train_annotations
         )
         __create_folder_and_save_data(
             os.path.join(
-                output_path, "validation"), val_images, val_annotations
+                output_path, dir_names[1]), val_images, val_annotations
         )
         __create_folder_and_save_data(
-            os.path.join(output_path, "test"), test_images, test_annotations
+            os.path.join(
+                output_path, dir_names[2]), test_images, test_annotations
         )
+
+        _write_yolo_yaml(output_path, *dir_names, coco_categories)
     except Exception as e:
         raise RuntimeError(f"Error saving dataset: {e}")
 
@@ -133,3 +144,48 @@ def __create_folder_and_save_data(
                         anotation_data, anotation_path)
     except Exception as e:
         raise RuntimeError(f"Error creating folder and saving data: {e}")
+
+
+def _write_yolo_yaml(
+    folder_path: str,
+    train_rel_path: str,
+    val_rel_path: str,
+    test_rel_path: str,
+    coco_categories: List[CocoCategory],
+    filename: str = "yolo",
+) -> None:
+    """
+    Write YOLO YAML file with the specified format.
+
+    Parameters:
+    - folder_path (str): Root directory of the dataset.
+    - train_rel_path (str): Path to the directory containing training images (relative to 'folder_path').
+    - val_rel_path (str): Path to the directory containing validation images (relative to 'folder_path').
+    - test_rel_path (str): Path to the directory containing test images (relative to 'folder_path').
+    - coco_categories (List[CocoCategory]): List of CocoCategory instances representing class information.
+    - filename (str): Name of the YAML file (default is "yolo").
+
+    Raises:
+    - RuntimeError: If there is an error during the YAML file writing process.
+    """
+
+    try:
+        # If different id's are needed should use the same map as in coco_to_yolo()
+        category_dict = {category.id -
+                         1: category.name for category in coco_categories}
+
+        data = {
+            "path": folder_path,
+            "train": train_rel_path,
+            "val": val_rel_path,
+            "test": test_rel_path,
+            "names": category_dict,
+        }
+
+        file_path = os.path.join(folder_path, f"{filename}.yaml")
+        with open(file_path, "w") as yaml_file:
+            yaml.dump(data, yaml_file,
+                      default_flow_style=False, sort_keys=False)
+
+    except Exception as e:
+        raise RuntimeError(f"Error writing YOLO YAML file: {e}")
