@@ -16,8 +16,9 @@ def main(args) -> None:
 
     print("Loading and resizing images...")
     images = dict(data_loader.load_images_from_path(args.images_path))
+    sorted_images = dict(sorted(images.items()))
     resized_images = {}
-    for _id, image in tqdm(images.items(), desc="Resizing images", unit="image"):
+    for _id, image in tqdm(sorted_images.items(), desc="Resizing images", unit="image"):
         resized_images[_id] = image.resize(args.new_size, Image.NEAREST)
 
     print("Splitting and saving dataset and YAML file...")
