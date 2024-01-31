@@ -101,16 +101,13 @@ def save_dataset(
         os.makedirs(output_path, exist_ok=True)
         dir_names = ["train", "validation", "test"]
         __create_folder_and_save_data(
-            os.path.join(
-                output_path, dir_names[0]), train_images, train_annotations
+            output_path, dir_names[0], train_images, train_annotations
         )
         __create_folder_and_save_data(
-            os.path.join(
-                output_path, dir_names[1]), val_images, val_annotations
+            output_path, dir_names[1], val_images, val_annotations
         )
         __create_folder_and_save_data(
-            os.path.join(
-                output_path, dir_names[2]), test_images, test_annotations
+            output_path, dir_names[2], test_images, test_annotations
         )
 
         _write_yolo_yaml(output_path, *dir_names, coco_categories)
@@ -120,6 +117,7 @@ def save_dataset(
 
 def __create_folder_and_save_data(
     folder_path: str,
+    folder_name: str,
     images: List[Tuple[int, List[str]]],
     annotations: List[Tuple[int, List[YoloAnnotation]]],
 ) -> None:
@@ -128,18 +126,22 @@ def __create_folder_and_save_data(
 
     Parameters:
     - folder_path (str): Path to the folder.
+    - folder_name (str): Name of the folder.
     - images (List[Tuple[int, List[str]]]): List of images with IDs and paths.
     - annotations (List[Tuple[int, List[YoloAnnotation]]]): List of annotations with image IDs.
     """
     try:
-        os.makedirs(folder_path, exist_ok=True)
+        images_path = os.path.join(folder_path, 'images', folder_name)
+        annotations_path = os.path.join(folder_path, 'labels', folder_name)
+        os.makedirs(images_path, exist_ok=True)
+        os.makedirs(annotations_path, exist_ok=True)
         for id, image in images:
-            image_path = os.path.join(folder_path, str(id) + ".jpg")
+            image_path = os.path.join(images_path, str(id) + ".jpg")
             image.save(image_path)
             for anottation_id, anotation_data in annotations:
                 if str(anottation_id).zfill(3) == str(id):
                     anotation_path = os.path.join(
-                        folder_path, str(id) + ".txt")
+                        annotations_path, str(id) + ".txt")
                     YoloAnnotation.write_to_file(
                         anotation_data, anotation_path)
     except Exception as e:
@@ -176,9 +178,9 @@ def _write_yolo_yaml(
 
         data = {
             "path": folder_path,
-            "train": train_rel_path,
-            "val": val_rel_path,
-            "test": test_rel_path,
+            "train": 'images/' + train_rel_path,
+            "val": 'images/' + val_rel_path,
+            "test": 'images/' + test_rel_path,
             "names": category_dict,
         }
 
